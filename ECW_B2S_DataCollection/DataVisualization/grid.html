@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جدول البيانات</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Tabulator CSS -->
+    <link href="https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator_bootstrap4.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <a href="index.html">ECW B2S</a>
+        </div>
+        <nav class="nav-links">
+            <ul>
+                <li><a href="dashboard.html">لوحة المتابعة</a></li>
+                <li><a href="detailed_dashboard.html">لوحة المتابعة التفصيلية</a></li>
+                <li><a href="grid.html">جدول البيانات</a></li>
+            </ul>
+        </nav>
+        <button class="menu-toggle"><i class="fas fa-bars"></i></button>
+    </header>
+
+    <main>
+        <h1>جدول البيانات التفصيلي</h1>
+
+        <div class="export-buttons">
+            <div class="grouping-controls">
+                <label for="group-by-select">تجميع حسب:</label>
+                <select id="group-by-select">
+                    <option value="">لا شيء</option>
+                    <option value="directorate">المديرية</option>
+                    <option value="volunteer_name">اسم المتطوع</option>
+                    <option value="activity_type">نوع النشاط</option>
+                    <option value="activity_date">تاريخ النشاط</option>
+                </select>
+                <button id="apply-grouping">تطبيق التجميع</button>
+            </div>
+            <button id="download-csv">تنزيل CSV</button>
+            <button id="download-xlsx">تنزيل XLSX</button>
+            <button id="download-pdf">تنزيل PDF</button>
+        </div>
+
+        <div id="data-grid-table"></div>
+    </main>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <!-- Tabulator JS -->
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js"></script>
+    <!-- XLSX and PDF export libraries -->
+    <script type="text/javascript" src="https://oss.sheetjs.com/sheetjs/xlsx.full.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- App Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/grid.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

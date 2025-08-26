@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة المتابعة التفصيلية</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <a href="index.html">ECW B2S</a>
+        </div>
+        <nav class="nav-links">
+            <ul>
+                <li><a href="dashboard.html">لوحة المتابعة</a></li>
+                <li><a href="detailed_dashboard.html">لوحة المتابعة التفصيلية</a></li>
+                <li><a href="grid.html">جدول البيانات</a></li>
+            </ul>
+        </nav>
+        <button class="menu-toggle"><i class="fas fa-bars"></i></button>
+    </header>
+
+    <main>
+        <h1>لوحة المتابعة التفصيلية</h1>
+
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label for="directorate-filter">المديرية:</label>
+                <select id="directorate-filter">
+                    <option value="all">الكل</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="volunteer-filter">اسم المتطوع:</label>
+                <select id="volunteer-filter">
+                    <option value="all">الكل</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="start-date-filter">من تاريخ:</label>
+                <input type="date" id="start-date-filter">
+            </div>
+            <div class="filter-group">
+                <label for="end-date-filter">إلى تاريخ:</label>
+                <input type="date" id="end-date-filter">
+            </div>
+            <button id="reset-filters">إعادة تعيين</button>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>إجمالي الإدخالات</h3>
+                <p id="total-records">0</p>
+            </div>
+            <div class="card">
+                <h3>إجمالي المستفيدين</h3>
+                <p id="total-beneficiaries">0</p>
+            </div>
+            <div class="card">
+                <h3>إجمالي المتطوعين</h3>
+                <p id="total-volunteers">0</p>
+            </div>
+            <div class="card">
+                <h3>إجمالي المديريات</h3>
+                <p id="total-districts">0</p>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-container">
+                <canvas id="district-chart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="activity-chart"></canvas>
+            </div>
+             <div class="chart-container">
+                <canvas id="beneficiary-chart"></canvas>
+            </div>
+        </div>
+
+        <div class="data-table-container">
+            <h2>البيانات التفصيلية</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>تاريخ النشاط</th>
+                        <th>المديرية</th>
+                        <th>المنطقة</th>
+                        <th>نوع النشاط</th>
+                        <th>اسم المتطوع</th>
+                        <th>إجمالي المستفيدين</th>
+                    </tr>
+                </thead>
+                <tbody id="data-table-body">
+                    <!-- Data rows will be inserted here -->
+                </tbody>
+            </table>
+            <div class="pagination" id="pagination-controls">
+                <!-- Pagination buttons will be inserted here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <!-- App Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/detailed_dashboard.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

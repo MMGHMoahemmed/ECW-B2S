@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة المتابعة</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <a href="index.html">ECW B2S</a>
+        </div>
+        <nav class="nav-links">
+            <ul>
+                <li><a href="dashboard.html">لوحة المتابعة</a></li>
+                <li><a href="detailed_dashboard.html">لوحة المتابعة التفصيلية</a></li>
+                <li><a href="grid.html">جدول البيانات</a></li>
+            </ul>
+        </nav>
+        <button class="menu-toggle"><i class="fas fa-bars"></i></button>
+    </header>
+
+    <main>
+        <h1>لوحة المتابعة العامة</h1>
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>إجمالي الإدخالات</h3>
+                <p id="total-records">0</p>
+            </div>
+            <div class="card">
+                <h3>إدخالات اليوم</h3>
+                <p id="today-records">0</p>
+            </div>
+            <div class="card">
+                <h3>إجمالي المتطوعين</h3>
+                <p id="total-volunteers">0</p>
+            </div>
+            <div class="card">
+                <h3>إجمالي المديريات</h3>
+                <p id="total-districts">0</p>
+            </div>
+        </div>
+        <div class="charts-grid">
+            <div class="chart-container">
+                <canvas id="district-chart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="activity-chart"></canvas>
+            </div>
+             <div class="chart-container">
+                <canvas id="beneficiary-chart"></canvas>
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <!-- App Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

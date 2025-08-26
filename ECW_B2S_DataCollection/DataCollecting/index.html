@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECW B2S - جمع البيانات</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1>ECW B2S - جمع البيانات</h1>
+            <button id="menu-btn">&#9776;</button>
+        </div>
+    </header>
+
+    <nav id="nav-menu">
+        <ul>
+            <li><a href="#" data-section="all">الكل</a></li>
+            <li><a href="#" data-section="form-section">الاستمارة</a></li>
+            <li><a href="#" data-section="drafts-section">النماذج المحفوظة</a></li>
+            <li><a href="#" data-section="sent-section">النماذج المرسلة</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <section id="form-section">
+            <form id="data-collection-form">
+                <input type="hidden" id="loaded-draft-key">
+                <div class="form-group">
+                    <label for="directorate">المديرية:</label>
+                    <select id="directorate" name="directorate" required>
+                        <option value="ذباب">ذباب</option>
+                        <option value="المخا">المخا</option>
+                        <option value="الخوخة">الخوخة</option>
+                        <option value="حيس">حيس</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="messages">الرسائل:</label>
+                    <textarea id="messages" name="messages" rows="4" >تعزيز حقوق الطفل بالتعلم (متضمنة حقوق الفتاة بالتعليم).
+أهمية التعليم ومخاطر تسرب الاطفال.
+تعزيز المعرفة الأساسية للمجتمع بالتدخلات.
+</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="volunteer-name">اسم المتطوع:</label>
+                    <select id="volunteer-name" name="volunteer_name" required>
+                        <option value="أشجان محمد محمد حسن الشامي">أشجان محمد محمد حسن الشامي</option>
+                        <option value="خلود محمد إبراهيم برود">خلود محمد إبراهيم برود</option>
+                        <option value="رقية أنور محمد عبده معروف">رقية أنور محمد عبده معروف</option>
+                        <option value="عبدالعزيز مهيوب راجح عقيلي">عبدالعزيز مهيوب راجح عقيلي</option>
+                        <option value="خالد إبراهيم فرج حسن عفيف">خالد إبراهيم فرج حسن عفيف</option>
+                        <option value="يحيى ثابت علي عدني">يحيى ثابت علي عدني</option>
+                        <option value="محمد عبده إبراهيم مكعبب">محمد عبده إبراهيم مكعبب</option>
+                        <option value="هديل عبدالرحمن حسن عوض حمنه">هديل عبدالرحمن حسن عوض حمنه</option>
+                        <option value="رنده علي قائد مهدي">رنده علي قائد مهدي</option>
+                        <option value="عبدالكريم قاسم احمد حميدان">عبدالكريم قاسم احمد حميدان</option>
+                        <option value="مضيئ إبراهيم علي حسين أجعش">مضيئ إبراهيم علي حسين أجعش</option>
+                        <option value="الياس قاسم محمد عبدالرزاق الشاذلي">الياس قاسم محمد عبدالرزاق الشاذلي</option>
+                        <option value="سمية عبدالله محمد معصلي">سمية عبدالله محمد معصلي</option>
+                        <option value="غادة حسين محمد جميل">غادة حسين محمد جميل</option>
+                        <option value="نوال صالح علي صلدي">نوال صالح علي صلدي</option>
+                        <option value="علي حسن علي هنبيق">علي حسن علي هنبيق</option>
+                        <option value="علي محمد شهاب مشهور الأهدل">علي محمد شهاب مشهور الأهدل</option>
+                        <option value="سعود ثابت احمد حيمي">سعود ثابت احمد حيمي</option>
+                        <option value="اروى احمد ناصر برطم">اروى احمد ناصر برطم</option>
+                        <option value="محمد علي احمد قحطان مهجمي">محمد علي احمد قحطان مهجمي</option>
+                        <option value="عبدالعزيز عوض محمد حضرمي">عبدالعزيز عوض محمد حضرمي</option>
+                        <option value="احمد محمد علي قاسم مقبل">احمد محمد علي قاسم مقبل</option>
+                        <option value="محمد صالح علي ثابت">محمد صالح علي ثابت</option>
+                        <option value="اقبال محسن علي سعيد الطبوري">اقبال محسن علي سعيد الطبوري</option>
+                        <option value="منصوبة ناصر منصوب خضر">منصوبة ناصر منصوب خضر</option>
+                        <option value="احمد حسن يوسف بليقس">احمد حسن يوسف بليقس</option>
+                    </select>
+                </div>
+
+                <h2>أنشطة المتطوعين</h2>
+                <div class="table-container">
+                    <table id="volunteer-activities-table" class="table-bordered">
+                        <thead>
+                            <tr>
+                                <th rowspan="2">نشاط المتطوعين</th>
+                                <th rowspan="2">المنطقة / الحي</th>
+                                <th rowspan="2">الجلسات</th>
+                                <th rowspan="2">مواد التوعية (بروشورات + بوسترات)</th>
+                                <th colspan="3">بنات</th>
+                                <th colspan="3">بنين</th>
+                                <th colspan="3">نساء</th>
+                                <th colspan="3">رجال</th>
+                                <th rowspan="2">اليوم - التاريخ</th>
+                            </tr>
+                            <tr>
+                                <th>مقيم</th>
+                                <th>عائد</th>
+                                <th>نازح</th>
+                                <th>مقيم</th>
+                                <th>عائد</th>
+                                <th>نازح</th>
+                                <th>مقيمة</th>
+                                <th>عائدة</th>
+                                <th>نازحة</th>
+                                <th>مقيم</th>
+                                <th>عائد</th>
+                                <th>نازح</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <select name="activity_type">
+                                        <option value="Focus Sessions">جلسات توعوية</option>
+                                        <option value="Home Visits">توعية من منزل الى منزل</option>
+                                        <option value="Recreational">انشطة ترفيهية</option>
+                                    </select>
+                                </td>
+                                <td><input type="text" name="district_area"></td>
+                                <td><input type="text" name="sessions" class="total-sessions"></td>
+                                <td><input type="text" name="iec_materials" class="total-iec"></td>
+                                <td><input type="text" name="girls_resident" class="total-girls-resident"></td>
+                                <td><input type="text" name="girls_returnee" class="total-girls-returnee"></td>
+                                <td><input type="text" name="girls_displaced" class="total-girls-displaced"></td>
+                                <td><input type="text" name="boys_resident" class="total-boys-resident"></td>
+                                <td><input type="text" name="boys_returnee" class="total-boys-returnee"></td>
+                                <td><input type="text" name="boys_displaced" class="total-boys-displaced"></td>
+                                <td><input type="text" name="women_resident" class="total-women-resident"></td>
+                                <td><input type="text" name="women_returnee" class="total-women-returnee"></td>
+                                <td><input type="text" name="women_displaced" class="total-women-displaced"></td>
+                                <td><input type="text" name="men_resident" class="total-men-resident"></td>
+                                <td><input type="text" name="men_returnee" class="total-men-returnee"></td>
+                                <td><input type="text" name="men_displaced" class="total-men-displaced"></td>
+                                <td><input type="date" name="activity_date"></td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2">المجموع</td>
+                                <td id="total-sessions">0</td>
+                                <td id="total-iec">0</td>
+                                <td id="total-girls-resident">0</td>
+                                <td id="total-girls-returnee">0</td>
+                                <td id="total-girls-displaced">0</td>
+                                <td id="total-boys-resident">0</td>
+                                <td id="total-boys-returnee">0</td>
+                                <td id="total-boys-displaced">0</td>
+                                <td id="total-women-resident">0</td>
+                                <td id="total-women-returnee">0</td>
+                                <td id="total-women-displaced">0</td>
+                                <td id="total-men-resident">0</td>
+                                <td id="total-men-returnee">0</td>
+                                <td id="total-men-displaced">0</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="add-row">إضافة صف</button>
+                    <button type="button" id="save-draft">حفظ كمسودة</button>
+                    <button type="submit" id="submit-form">إرسال</button>
+                </div>
+            </form>
+        </section>
+
+        <section id="drafts-section" class="hidden">
+            <h2>النماذج المحفوظة</h2>
+            <ul id="drafts-list"></ul>
+        </section>
+
+        <section id="sent-section" class="hidden">
+            <h2>النماذج المرسلة</h2>
+            <ul id="sent-list"></ul>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="firebase.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
