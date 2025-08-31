@@ -22,8 +22,10 @@ document.addEventListener('DOMContentLoaded', () => {
         for (const subKey in submissions) {
             const submission = submissions[subKey];
             if (submission.activities) {
-                submission.activities.forEach(activity => {
+                submission.activities.forEach((activity, index) => {
                     flattened.push({
+                        subKey: subKey,
+                        activityIndex: index,
                         directorate: submission.directorate || '-',
                         volunteer_name: submission.volunteer_name || '-',
                         activity_date: activity.activity_date || '-',
@@ -43,7 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         men_resident: parseInt(activity.men_resident) || 0,
                         men_returnee: parseInt(activity.men_returnee) || 0,
                         men_displaced: parseInt(activity.men_displaced) || 0,
-                        // Calculate total beneficiaries for this activity
                         total_beneficiaries: (
                             (parseInt(activity.girls_resident) || 0) + (parseInt(activity.girls_returnee) || 0) + (parseInt(activity.girls_displaced) || 0) +
                             (parseInt(activity.boys_resident) || 0) + (parseInt(activity.boys_returnee) || 0) + (parseInt(activity.boys_displaced) || 0) +
@@ -60,50 +61,140 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Tabulator Initialization ---
     function initializeTabulator(data) {
         if (table) {
-            table.destroy(); // Destroy existing table if it exists
+            table.destroy();
         }
 
         table = new Tabulator(tableContainer, {
             data: data,
-            layout:"fitDataFill", //fit columns to width of table (optional)
-            //responsiveLayout: "hide", //hide columns that dont fit on the table
-            addRowPos: "top", //when adding a row, add it to the top of the table
-            history: true, //allow undo and redo actions on the table
-            //pagination: "local", //paginate the data
-            //paginationSize: 10, //allow 10 rows per page of data
-            //paginationSizeSelector: [5, 10, 20, 50, 100], //allow the user to select the number of rows per page
-            movableColumns: true, //allow column order to be changed
-            resizableRows: true, //allow row height to be changed
-            autoColumns: false, //disable auto-generation of columns
-            //groupBy: ["directorate", "volunteer_name"], //group by directorate and then volunteer
-            groupHeader: function(value, count, data, group){
-                // Tabulator RTL fix for group header
-                return "<div style=\"text-align: right; width:100%;\">" + value + " (" + count + " الأنشطة)" + "</div>";
+            layout: "fitData",
+            history: true,
+            height: 600 ,
+            movableColumns: true,
+            resizableRows: true,
+            autoColumns: false,
+            groupHeader: function(value, count, data, group) {
+                return "<div style='text-align: right; width:100%;'>" + value + " (" + count + " الأنشطة)" + "</div>";
             },
             columns: [
-                { title: "تاريخ النشاط", field: "activity_date", hozAlign: "right", sorter: "date", headerFilter: "input", frozen: true },
-                { title: "المديرية", field: "directorate", hozAlign: "right", sorter: "string", headerFilter: "input", frozen: true },
-                { title: "المنطقة", field: "district_area", hozAlign: "right", sorter: "string", headerFilter: "input" },
-                { title: "نوع النشاط", field: "activity_type", hozAlign: "right", sorter: "string", headerFilter: "input" },
-                { title: "اسم المتطوع", field: "volunteer_name", hozAlign: "right", sorter: "string", headerFilter: "input" },
-                { title: "الجلسات", field: "sessions", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum" },
-                { title: "مواد توعية", field: "iec_materials", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum" },
-                { title: "بنات (مقيم)", field: "girls_resident", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum" },
-                { title: "بنات (عائد)", field: "girls_returnee", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum" },
-                { title: "بنات (نازح)", field: "girls_displaced", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum" },
-                { title: "بنين (مقيم)", field: "boys_resident", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum" },
-                { title: "بنين (عائد)", field: "boys_returnee", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum" },
-                { title: "بنين (نازح)", field: "boys_displaced", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum" },
-                { title: "نساء (مقيم)", field: "women_resident", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum" },
-                { title: "نساء (عائد)", field: "women_returnee", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum" },
-                { title: "نساء (نازح)", field: "women_displaced", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum" },
-                { title: "رجال (مقيم)", field: "men_resident", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum" },
-                { title: "رجال (عائد)", field: "men_returnee", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum" },
-                { title: "رجال (نازح)", field: "men_displaced", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum" },
+                {
+                    title: "حذف النشاط",
+                    field: "deleteActivity",
+                    hozAlign: "center",
+                    frozen: true,
+                    width:80,
+                    formatter: function(cell, formatterParams, onRendered) {
+                        return "<button class='delete-btn'>حذف</button>";
+                    },
+                    cellClick: function(e, cell) {
+                        const rowData = cell.getRow().getData();
+                        const { subKey, activityIndex } = rowData;
+                        if (confirm("هل أنت متأكد أنك تريد حذف هذا النشاط؟")) {
+                            deleteActivity(subKey, activityIndex);
+                        }
+                    }
+                },
+                {
+                    title: "حذف كامل الادخال",
+                    field: "deleteSubmission",
+                    hozAlign: "center",
+                    frozen: true,
+                    width:100,
+                    formatter: function(cell, formatterParams, onRendered) {
+                        return "<button class='delete-all-btn'>حذف كامل الادخال</button>";
+                    },
+                    cellClick: function(e, cell) {
+                        const rowData = cell.getRow().getData();
+                        const { subKey } = rowData;
+                        if (confirm("هل أنت متأكد أنك تريد حذف هذا الإرسال بالكامل؟")) {
+                            deleteSubmission(subKey);
+                        }
+                    }
+                },
+                { title: "تاريخ النشاط", field: "activity_date", hozAlign: "right", sorter: "date", headerFilter: "input", frozen: true, editor: "input",width :120, resizable:true },
+                { title: "المديرية", field: "directorate", hozAlign: "right", sorter: "string", headerFilter: "input", frozen: true, editor: "input",width:80, resizable:true },
+                { title: "المنطقة", field: "district_area", hozAlign: "right", sorter: "string", headerFilter: "input", editor: "input",frozen: true,resizable:true,width:80, },
+                { title: "نوع النشاط", field: "activity_type", hozAlign: "right", sorter: "string", headerFilter: "input", editor: "input",frozen: true,resizable:true },
+                { title: "اسم المتطوع", field: "volunteer_name", hozAlign: "right", sorter: "string", headerFilter: "input", editor: "input",frozen: true,resizable:true},
+                { title: "الجلسات", field: "sessions", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum", editor: "number" },
+                { title: "مواد توعية", field: "iec_materials", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum", editor: "number" },
+                { title: "بنات (مقيم)", field: "girls_resident", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum", editor: "number" },
+                { title: "بنات (عائد)", field: "girls_returnee", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum", editor: "number" },
+                { title: "بنات (نازح)", field: "girls_displaced", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum", editor: "number" },
+                { title: "بنين (مقيم)", field: "boys_resident", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum", editor: "number" },
+                { title: "بنين (عائد)", field: "boys_returnee", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum", editor: "number" },
+                { title: "بنين (نازح)", field: "boys_displaced", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum", editor: "number" },
+                { title: "نساء (مقيم)", field: "women_resident", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum", editor: "number" },
+                { title: "نساء (عائد)", field: "women_returnee", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum", editor: "number" },
+                { title: "نساء (نازح)", field: "women_displaced", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum", editor: "number" },
+                { title: "رجال (مقيم)", field: "men_resident", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum", editor: "number" },
+                { title: "رجال (عائد)", field: "men_returnee", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum", editor: "number" },
+                { title: "رجال (نازح)", field: "men_displaced", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum", editor: "number" },
                 { title: "إجمالي المستفيدين", field: "total_beneficiaries", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum" }
             ],
-            // Add custom filter function for date range if needed
-            // headerFilters: true, // Enable header filters
+            cellEdited: function(cell) {
+                const rowData = cell.getRow().getData();
+                const { subKey, activityIndex } = rowData;
+                updateFirebaseData(subKey, activityIndex, rowData);
+            }
+        });
+    }
+
+    function updateFirebaseData(subKey, activityIndex, updatedData) {
+        const submissionRef = database.ref(`submissions/${subKey}`);
+        submissionRef.once('value', (snapshot) => {
+            const submission = snapshot.val();
+            if (submission && submission.activities && submission.activities[activityIndex]) {
+                const activityToUpdate = submission.activities[activityIndex];
+                activityToUpdate.activity_date = updatedData.activity_date;
+                activityToUpdate.activity_type = updatedData.activity_type;
+                activityToUpdate.district_area = updatedData.district_area;
+                activityToUpdate.sessions = updatedData.sessions;
+                activityToUpdate.iec_materials = updatedData.iec_materials;
+                activityToUpdate.girls_resident = updatedData.girls_resident;
+                activityToUpdate.girls_returnee = updatedData.girls_returnee;
+                activityToUpdate.girls_displaced = updatedData.girls_displaced;
+                activityToUpdate.boys_resident = updatedData.boys_resident;
+                activityToUpdate.boys_returnee = updatedData.boys_returnee;
+                activityToUpdate.boys_displaced = updatedData.boys_displaced;
+                activityToUpdate.women_resident = updatedData.women_resident;
+                activityToUpdate.women_returnee = updatedData.women_returnee;
+                activityToUpdate.women_displaced = updatedData.women_displaced;
+                activityToUpdate.men_resident = updatedData.men_resident;
+                activityToUpdate.men_returnee = updatedData.men_returnee;
+                activityToUpdate.men_displaced = updatedData.men_displaced;
+
+                submissionRef.set(submission).then(() => {
+                    console.log("Data updated successfully");
+                }).catch((error) => {
+                    console.error("Error updating data: ", error);
+                });
+            }
+        });
+    }
+
+    function deleteActivity(subKey, activityIndex) {
+        const submissionRef = database.ref(`submissions/${subKey}`);
+        submissionRef.once('value', (snapshot) => {
+            const submission = snapshot.val();
+            if (submission && submission.activities && submission.activities.length > 1) {
+                submission.activities.splice(activityIndex, 1);
+                submissionRef.set(submission).then(() => {
+                    console.log("Activity deleted successfully");
+                }).catch((error) => {
+                    console.error("Error deleting activity: ", error);
+                });
+            } else {
+                deleteSubmission(subKey);
+            }
+        });
+    }
+
+    function deleteSubmission(subKey) {
+        const submissionRef = database.ref(`submissions/${subKey}`);
+        submissionRef.remove().then(() => {
+            console.log("Submission deleted successfully");
+        }).catch((error) => {
+            console.error("Error deleting submission: ", error);
         });
     }
 
@@ -113,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     downloadXlsxBtn.addEventListener('click', () => {
-        table.download("xlsx", "data.xlsx", {sheetName:"My Data"});
+        table.download("xlsx", "data.xlsx", { sheetName: "My Data" });
     });
 
     downloadPdfBtn.addEventListener('click', () => {
