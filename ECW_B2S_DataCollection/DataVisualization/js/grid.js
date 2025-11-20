@@ -8,21 +8,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const applyGroupingBtn = document.getElementById('apply-grouping');
 
     let table;
+    const submissionsRef = database.ref('submissions');
+    let listenersAttached = false;
 
     // --- Data Fetching and Transformation ---
-    const submissionsRef = database.ref('submissions');
-    submissionsRef.on('value', (snapshot) => {
+
+    // Initial data load
+    submissionsRef.once('value', (snapshot) => {
         const submissions = snapshot.val() || {};
         const flattenedData = flattenSubmissions(submissions);
         initializeTabulator(flattenedData);
+        if (!listenersAttached) {
+            listenForUpdates();
+            listenersAttached = true;
+        }
+    }, (error) => {
+        console.error("Firebase initial data load failed: ", error);
     });
 
-    function flattenSubmissions(submissions) {
+    function flattenSingleSubmission(submission, subKey) {
         const flattened = [];
-        for (const subKey in submissions) {
-            const submission = submissions[subKey];
-            if (submission.activities) {
-                submission.activities.forEach((activity, index) => {
+        if (submission && submission.activities) {
+            submission.activities.forEach((activity, index) => {
+                if (activity) { // Ensure activity is not null
                     flattened.push({
                         subKey: subKey,
                         activityIndex: index,
@@ -52,31 +60,88 @@ document.addEventListener('DOMContentLoaded', () => {
                             (parseInt(activity.men_resident) || 0) + (parseInt(activity.men_returnee) || 0) + (parseInt(activity.men_displaced) || 0)
                         )
                     });
-                });
-            }
+                }
+            });
         }
         return flattened;
     }
 
+    function flattenSubmissions(submissions) {
+        const flattened = [];
+        for (const subKey in submissions) {
+            flattened.push(...flattenSingleSubmission(submissions[subKey], subKey));
+        }
+        return flattened;
+    }
+
+    function listenForUpdates() {
+        submissionsRef.on('child_added', (snapshot) => {
+            // This will also fire for the initial data, so we check if the table is already there.
+            // A better approach is to use once() for initial load, which is what we are doing.
+            // This listener is attached after the initial load.
+            const subKey = snapshot.key;
+            const submission = snapshot.val();
+            const newRows = flattenSingleSubmission(submission, subKey);
+            // Check if rows for this subKey already exist to avoid duplication on initial load race conditions
+            const existingRows = table.getRows().filter(row => row.getData().subKey === subKey);
+            if (existingRows.length === 0) {
+                 table.addData(newRows, false); // Add new rows without redrawing
+            }
+        });
+
+        submissionsRef.on('child_changed', (snapshot) => {
+            const subKey = snapshot.key;
+            const submission = snapshot.val();
+            const updatedRowsData = flattenSingleSubmission(submission, subKey);
+
+            // Get all current rows in the table for this submission
+            const existingRows = table.getRows().filter(row => row.getData().subKey === subKey);
+            const updatedActivityIndexes = updatedRowsData.map(r => r.activityIndex);
+
+            // First, remove any rows (activities) that no longer exist in the updated submission
+            existingRows.forEach(row => {
+                if (!updatedActivityIndexes.includes(row.getData().activityIndex)) {
+                    row.delete();
+                }
+            });
+
+            // Now, update existing rows and add new ones
+            table.updateOrAddData(updatedRowsData);
+        });
+
+        submissionsRef.on('child_removed', (snapshot) => {
+            const subKey = snapshot.key;
+            const rowsToDelete = table.getRows().filter(row => row.getData().subKey === subKey);
+            rowsToDelete.forEach(row => {
+                row.delete();
+            });
+        });
+    }
+
+
     // --- Tabulator Initialization ---
     function initializeTabulator(data) {
         if (table) {
-            table.destroy();
+            // If you want to completely re-initialize, which we are avoiding now.
+            // For safety, we can clear data instead of destroying.
+            table.clearData();
+            table.setData(data);
+            return;
         }
 
         table = new Tabulator(tableContainer, {
             data: data,
+            index: ["subKey", "activityIndex"], // Set composite index
             layout: "fitData",
             history: true,
-            height: 600 ,
+            height: 600,
             movableColumns: true,
             resizableRows: true,
-            autoColumns: false,
-            groupHeader: function(value, count, data, group) {
+            groupHeader: function (value, count, data, group) {
                 return "<div style='text-align: right; width:100%;'>" + value + " (" + count + " الأنشطة)" + "</div>";
             },
             columns: [
-                {
+                 {
                     title: "حذف النشاط",
                     field: "deleteActivity",
                     hozAlign: "center",
@@ -131,11 +196,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 { title: "رجال (نازح)", field: "men_displaced", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum", editor: "number" },
                 { title: "إجمالي المستفيدين", field: "total_beneficiaries", hozAlign: "right", sorter: "number", headerFilter: "number", bottomCalc: "sum" }
             ],
-            cellEdited: function(cell) {
-                const rowData = cell.getRow().getData();
-                const { subKey, activityIndex } = rowData;
-                updateFirebaseData(subKey, activityIndex, rowData);
-            }
+        });
+
+        table.on("cellEdited", function (cell) {
+            const rowData = cell.getRow().getData();
+            const { subKey, activityIndex } = rowData;
+            // The update is now handled by the 'child_changed' listener, but we still need to trigger it.
+            updateFirebaseData(subKey, activityIndex, rowData);
         });
     }
 
@@ -144,7 +211,10 @@ document.addEventListener('DOMContentLoaded', () => {
         submissionRef.once('value', (snapshot) => {
             const submission = snapshot.val();
             if (submission && submission.activities && submission.activities[activityIndex]) {
-                const activityToUpdate = submission.activities[activityIndex];
+                // Create a copy of the activity to update
+                const activityToUpdate = { ...submission.activities[activityIndex] };
+
+                // Update only the fields that are editable in the table
                 activityToUpdate.activity_date = updatedData.activity_date;
                 activityToUpdate.activity_type = updatedData.activity_type;
                 activityToUpdate.district_area = updatedData.district_area;
@@ -163,8 +233,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 activityToUpdate.men_returnee = updatedData.men_returnee;
                 activityToUpdate.men_displaced = updatedData.men_displaced;
 
-                submissionRef.set(submission).then(() => {
-                    console.log("Data updated successfully");
+                // Create a copy of the submission to avoid mutating the original object directly
+                const newSubmission = { ...submission };
+                newSubmission.activities[activityIndex] = activityToUpdate;
+
+                // Update other top-level fields if they are editable
+                newSubmission.directorate = updatedData.directorate;
+                newSubmission.volunteer_name = updatedData.volunteer_name;
+
+
+                submissionRef.set(newSubmission).then(() => {
+                    console.log("Data updated successfully via cell edit.");
                 }).catch((error) => {
                     console.error("Error updating data: ", error);
                 });
@@ -177,13 +256,16 @@ document.addEventListener('DOMContentLoaded', () => {
         submissionRef.once('value', (snapshot) => {
             const submission = snapshot.val();
             if (submission && submission.activities && submission.activities.length > 1) {
-                submission.activities.splice(activityIndex, 1);
-                submissionRef.set(submission).then(() => {
+                const newActivities = [...submission.activities];
+                newActivities.splice(activityIndex, 1);
+                const newSubmission = { ...submission, activities: newActivities };
+                submissionRef.set(newSubmission).then(() => {
                     console.log("Activity deleted successfully");
                 }).catch((error) => {
                     console.error("Error deleting activity: ", error);
                 });
             } else {
+                // If it's the last activity, delete the whole submission
                 deleteSubmission(subKey);
             }
         });
@@ -216,10 +298,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     applyGroupingBtn.addEventListener('click', () => {
         const selectedField = groupBySelect.value;
-        if (selectedField) {
-            table.setGroupBy(selectedField);
-        } else {
-            table.setGroupBy(false);
-        }
+        table.setGroupBy(selectedField || false);
     });
 });
